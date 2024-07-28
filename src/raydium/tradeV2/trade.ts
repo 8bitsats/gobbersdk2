@@ -1047,7 +1047,7 @@ export default class TradeV2 extends ModuleBase {
         remainingAccounts: [],
         routeType: "amm",
         poolInfoList: [itemPool],
-        poolReady: itemPool.openTime.toNumber() < chainTime,
+        poolReady: true,
         poolType: "CPMM",
         slippage,
         clmmExPriceX64: [undefined],
@@ -1088,7 +1088,7 @@ export default class TradeV2 extends ModuleBase {
         routeType: "amm",
         poolInfoList: [itemPool],
         remainingAccounts: [],
-        poolReady: Number(simulateCache[itemPool.id as string].openTime) < chainTime,
+        poolReady: true,
         poolType: itemPool.version === 5 ? "STABLE" : undefined,
         expirationTime: undefined,
         allTrade: true,
@@ -1176,7 +1176,6 @@ export default class TradeV2 extends ModuleBase {
           id: pool.id.toBase58(),
           mintA: pool.mintA,
           mintB: pool.mintB,
-          openTime: String(pool.startTime),
           vault: {
             A: rpcInfo.vaultA.toBase58(),
             B: rpcInfo.vaultB.toBase58(),
@@ -1197,7 +1196,6 @@ export default class TradeV2 extends ModuleBase {
           id: pool.id,
           mintA: pool.mintA,
           mintB: pool.mintB,
-          openTime: String(pool.openTime),
           vault: {
             A: rpcInfo.baseVault.toBase58(),
             B: rpcInfo.quoteVault.toBase58(),
@@ -1215,7 +1213,6 @@ export default class TradeV2 extends ModuleBase {
           id: pool.id.toBase58(),
           mintA: pool.mintA,
           mintB: pool.mintB,
-          openTime: String(pool.openTime),
           authority: getPdaPoolAuthority(pool.programId).publicKey.toBase58(),
           vault: {
             A: pool.vaultA.toBase58(),

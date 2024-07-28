@@ -44,7 +44,5 @@ export const CpmmPoolInfoLayout = struct([
   u64("protocolFeesMintB"),
   u64("fundFeesMintA"),
   u64("fundFeesMintB"),
-  u64("openTime"),
-
   seq(u64(), 32),
 ]);

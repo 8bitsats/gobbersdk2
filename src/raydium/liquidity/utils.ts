@@ -242,7 +242,6 @@ export const toAmmComputePoolInfo = (
       feeRate: new Decimal(poolInfo.tradeFeeNumerator.toString())
         .div(poolInfo.tradeFeeDenominator.toString())
         .toNumber(),
-      openTime: poolInfo.poolOpenTime.toString(),
       tvl: 0,
       day: mockRewardData,
       week: mockRewardData,

@@ -28,7 +28,7 @@ export function makeCreateCpmmPoolInInstruction(
   userLpAccount: PublicKey,
   vaultA: PublicKey,
   vaultB: PublicKey,
-  createPoolFeeAccount: PublicKey,
+
   mintProgramA: PublicKey,
   mintProgramB: PublicKey,
   observationId: PublicKey,
@@ -37,7 +37,7 @@ export function makeCreateCpmmPoolInInstruction(
   amountMaxB: BN,
   openTime: BN,
 ): TransactionInstruction {
-  const dataLayout = struct([u64("amountMaxA"), u64("amountMaxB"), u64("openTime")]);
+  const dataLayout = struct([u64("amountMaxA"), u64("amountMaxB")]);
 
   const keys: Array<AccountMeta> = [
     { pubkey: creator, isSigner: true, isWritable: false },
@@ -52,7 +52,6 @@ export function makeCreateCpmmPoolInInstruction(
     { pubkey: userLpAccount, isSigner: false, isWritable: true },
     { pubkey: vaultA, isSigner: false, isWritable: true },
     { pubkey: vaultB, isSigner: false, isWritable: true },
-    { pubkey: createPoolFeeAccount, isSigner: false, isWritable: true },
     { pubkey: observationId, isSigner: false, isWritable: true },
 
     { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
@@ -68,7 +67,6 @@ export function makeCreateCpmmPoolInInstruction(
     {
       amountMaxA,
       amountMaxB,
-      openTime,
     },
     data,
   );

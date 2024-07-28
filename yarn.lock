@@ -1743,7 +1743,7 @@
     "@solana/codecs" "2.0.0-preview.2"
     "@solana/spl-type-length-value" "0.1.0"
 
-"@solana/spl-token@^0.1.6", "@solana/spl-token@^0.4.6":
+"@solana/spl-token@0.4.6", "@solana/spl-token@^0.1.6", "@solana/spl-token@^0.4.6":
   version "0.4.6"
   resolved "https://registry.yarnpkg.com/@solana/spl-token/-/spl-token-0.4.6.tgz#eb44e5080ea7b6fc976abcb39457223211bd9076"
   integrity sha512-1nCnUqfHVtdguFciVWaY/RKcQz1IF4b31jnKgAmjU9QVN1q7dRUkTEWJZgTYIEtsULjVnC9jRqlhgGN39WbKKA==

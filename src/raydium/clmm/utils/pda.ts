@@ -28,11 +28,12 @@ export function getPdaPoolId(
   ammConfigId: PublicKey,
   mintA: PublicKey,
   mintB: PublicKey,
+  creator: PublicKey,
 ): {
   publicKey: PublicKey;
   nonce: number;
 } {
-  return findProgramAddress([POOL_SEED, ammConfigId.toBuffer(), mintA.toBuffer(), mintB.toBuffer()], programId);
+  return findProgramAddress([POOL_SEED, ammConfigId.toBuffer(), mintA.toBuffer(), mintB.toBuffer(), creator.toBuffer()], programId);
 }
 
 export function getPdaPoolVaultId(

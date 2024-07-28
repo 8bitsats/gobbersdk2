@@ -199,7 +199,6 @@ export interface ApiV3PoolInfoBaseItem {
   mintAmountA: number;
   mintAmountB: number;
   feeRate: number;
-  openTime: string;
   tvl: number;
 
   day: ApiV3PoolInfoCountItem;
@@ -282,7 +281,6 @@ interface Base {
   mintA: ApiV3Token;
   mintB: ApiV3Token;
   lookupTableAccount?: string;
-  openTime: string;
   vault: { A: string; B: string };
 }
 interface _Amm {

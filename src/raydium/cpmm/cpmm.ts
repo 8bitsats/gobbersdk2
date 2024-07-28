@@ -247,7 +247,6 @@ export default class CpmmModule extends ModuleBase {
         mintAmountA: new Decimal(rpcData.vaultAAmount.toString()).div(10 ** mintA.decimals).toNumber(),
         mintAmountB: new Decimal(rpcData.vaultBAmount.toString()).div(10 ** mintB.decimals).toNumber(),
         feeRate: rpcData.configInfo!.tradeFeeRate.toNumber(),
-        openTime: rpcData.openTime.toString(),
         tvl: 0,
 
         day: mockRewardData,
@@ -264,7 +263,6 @@ export default class CpmmModule extends ModuleBase {
         id: poolId,
         mintA,
         mintB,
-        openTime: rpcData.openTime.toString(),
         vault: { A: rpcData.vaultA.toBase58(), B: rpcData.vaultB.toBase58() },
         authority: getPdaPoolAuthority(rpcData.programId).publicKey.toBase58(),
         mintLp: lpMint,
@@ -339,6 +337,7 @@ export default class CpmmModule extends ModuleBase {
     if (userVaultA === undefined || userVaultB === undefined) throw Error("you don't has some token account");
 
     const poolKeys = getCreatePoolKeys({
+      creator: this.scope.ownerPubKey,
       programId,
       mintA: mintAPubkey,
       mintB: mintBPubkey,
@@ -360,7 +359,6 @@ export default class CpmmModule extends ModuleBase {
           getATAAddress(this.scope.ownerPubKey, poolKeys.lpMint).publicKey,
           poolKeys.vaultA,
           poolKeys.vaultB,
-          poolFeeAccount,
           new PublicKey(mintA.programId ?? TOKEN_PROGRAM_ID),
           new PublicKey(mintB.programId ?? TOKEN_PROGRAM_ID),
           poolKeys.observationId,

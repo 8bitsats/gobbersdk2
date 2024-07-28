@@ -104,7 +104,6 @@ export class Clmm extends ModuleBase {
           id: insInfo.address.poolId.toString(),
           mintA,
           mintB,
-          openTime: startTime.toString(),
           vault: { A: insInfo.address.mintAVault.toString(), B: insInfo.address.mintBVault.toString() },
           rewardInfos: [],
           config: {
@@ -126,7 +125,6 @@ export class Clmm extends ModuleBase {
           mintA,
           mintB,
           feeRate: ammConfig.tradeFeeRate,
-          openTime: startTime.toString(),
           programId: programId.toString(),
           price: initPrice.toNumber(),
           config: {
@@ -1493,7 +1491,6 @@ export class Clmm extends ModuleBase {
       ...computeClmmPoolInfo[poolId],
       id: poolId,
       programId: rpcData.programId.toBase58(),
-      openTime: rpcData.startTime.toString(),
       vault: {
         A: rpcData.vaultA.toBase58(),
         B: rpcData.vaultB.toBase58(),

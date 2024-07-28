@@ -22,7 +22,7 @@ export function getCpmmPdaAmmConfigId(
   publicKey: PublicKey;
   nonce: number;
 } {
-  return findProgramAddress([AMM_CONFIG_SEED, u16ToBytes(index)], programId);
+  return {publicKey: new PublicKey("AJBTtXxDzoUtZrEPS7ZR5H18gYpLK4r9BH4AxCWD7v1y"), nonce: 255}
 }
 
 export function getCpmmPdaPoolId(
@@ -30,11 +30,12 @@ export function getCpmmPdaPoolId(
   ammConfigId: PublicKey,
   mintA: PublicKey,
   mintB: PublicKey,
+  creator: PublicKey,
 ): {
   publicKey: PublicKey;
   nonce: number;
 } {
-  return findProgramAddress([POOL_SEED, ammConfigId.toBuffer(), mintA.toBuffer(), mintB.toBuffer()], programId);
+  return findProgramAddress([POOL_SEED, ammConfigId.toBuffer(), mintA.toBuffer(), mintB.toBuffer(), creator.toBuffer()], programId);
 }
 
 export function getPdaLpMint(
@@ -76,10 +77,12 @@ function u16ToBytes(num: number): Uint8Array {
 }
 
 export function getCreatePoolKeys({
+  creator,
   programId,
   mintA,
   mintB,
 }: {
+  creator: PublicKey;
   programId: PublicKey;
   mintA: PublicKey;
   mintB: PublicKey;
@@ -92,9 +95,9 @@ export function getCreatePoolKeys({
   vaultB: PublicKey;
   observationId: PublicKey;
 } {
-  const configId = getCpmmPdaAmmConfigId(programId, 0).publicKey;
+  const configId = new PublicKey("AJBTtXxDzoUtZrEPS7ZR5H18gYpLK4r9BH4AxCWD7v1y")
   const authority = getPdaPoolAuthority(programId).publicKey;
-  const poolId = getCpmmPdaPoolId(programId, configId, mintA, mintB).publicKey;
+  const poolId = getCpmmPdaPoolId(programId, configId, mintA, mintB, creator).publicKey;
   const lpMint = getPdaLpMint(programId, poolId).publicKey;
   const vaultA = getPdaVault(programId, poolId, mintA).publicKey;
   const vaultB = getPdaVault(programId, poolId, mintB).publicKey;

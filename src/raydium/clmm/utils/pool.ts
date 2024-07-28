@@ -1241,7 +1241,6 @@ export function clmmComputeInfoToApiInfo(pool: ComputeClmmPoolInfo): ApiV3PoolIn
     mintAmountA: 0,
     mintAmountB: 0,
     feeRate: pool.ammConfig.tradeFeeRate,
-    openTime: pool.startTime.toString(),
     tvl: 0,
 
     day: mockRewardData,

@@ -139,7 +139,7 @@ export class ClmmInstrument {
       }),
     ];
 
-    const { publicKey: poolId } = getPdaPoolId(programId, ammConfigId, mintAAddress, mintBAddress);
+    const { publicKey: poolId } = getPdaPoolId(programId, ammConfigId, mintAAddress, mintBAddress, owner);
     const { publicKey: mintAVault } = getPdaPoolVaultId(programId, poolId, mintAAddress);
     const { publicKey: mintBVault } = getPdaPoolVaultId(programId, poolId, mintBAddress);
 
