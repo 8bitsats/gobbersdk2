@@ -25,8 +25,8 @@ export const IDO_PROGRAM_ID_V3 = new PublicKey("9HzJyW1qZsEiSfMUf6L2jo3CcTKAyBmS
 export const IDO_PROGRAM_ID_V4 = new PublicKey("DropEU8AvevN3UrXWXTMuz3rqnMczQVNjq3kcSdW2SQi");
 
 export const CREATE_CPMM_POOL_PROGRAM = new PublicKey("8yQvrjQuritLntxz6pAaWcEX6CsRMeDmr7baCLnNwEuw");
-export const CREATE_CPMM_POOL_AUTH = new PublicKey("ArS2RdBKrpkBpZvka5tLFEw2SpXfi98VmF2EgjzgeG4P");
-export const CREATE_CPMM_POOL_FEE_ACC = new PublicKey("ArS2RdBKrpkBpZvka5tLFEw2SpXfi98VmF2EgjzgeG4P");
+export const CREATE_CPMM_POOL_AUTH = new PublicKey("E1oP2yNZXw3dFnUoPygWZPg9u2Gad87VFVPeYWqa6rD6");
+export const CREATE_CPMM_POOL_FEE_ACC = new PublicKey("E1oP2yNZXw3dFnUoPygWZPg9u2Gad87VFVPeYWqa6rD6");
 
 export const DEV_CREATE_CPMM_POOL_PROGRAM = new PublicKey("CPMDWBwJDtYax9qW7AyRuVC19Cc4L4Vcy4n2BHAbHkCW");
 export const DEV_CREATE_CPMM_POOL_AUTH = new PublicKey("7rQ1QFNosMkUCuh7Z7fPbTHvh73b68sQYdirycEzJVuw");

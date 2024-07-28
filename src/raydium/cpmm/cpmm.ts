@@ -232,7 +232,7 @@ export default class CpmmModule extends ModuleBase {
 
     return {
       poolInfo: {
-        programId: rpcData.programId.toBase58(),
+        programId: "8yQvrjQuritLntxz6pAaWcEX6CsRMeDmr7baCLnNwEuw",
         id: poolId,
         type: "Standard",
         lpMint,
@@ -259,7 +259,7 @@ export default class CpmmModule extends ModuleBase {
         farmFinishedCount: 0,
       },
       poolKeys: {
-        programId: rpcData.programId.toBase58(),
+        programId: "8yQvrjQuritLntxz6pAaWcEX6CsRMeDmr7baCLnNwEuw",
         id: poolId,
         mintA,
         mintB,
@@ -494,7 +494,24 @@ export default class CpmmModule extends ModuleBase {
     txBuilder.addInstruction(lpInstruction);
     const poolKeys = propPoolKeys ?? (await this.getCpmmPoolKeys(poolInfo.id));
     const _slippage = new Percent(new BN(1)).sub(slippage);
+console.log(
+  new PublicKey(poolInfo.programId),
+  this.scope.ownerPubKey,
+  new PublicKey(poolKeys.authority),
+  new PublicKey(poolInfo.id),
+  _lpTokenAccount!,
+  tokenAccountA!,
+  tokenAccountB!,
+  new PublicKey(poolKeys.vault.A),
+  new PublicKey(poolKeys.vault.B),
+  mintA,
+  mintB,
+  new PublicKey(poolInfo.lpMint.address),
 
+  computeResult ? computeResult?.liquidity : _slippage.mul(liquidity).quotient,
+  baseIn ? inputAmountFee.amount : anotherAmount,
+  baseIn ? anotherAmount : inputAmountFee.amount,
+)
     txBuilder.addInstruction({
       instructions: [
         makeDepositCpmmInInstruction(

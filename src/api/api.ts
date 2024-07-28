@@ -15,11 +15,13 @@ import {
   FormatFarmKeyOut,
   AvailabilityCheckAPI3,
   PoolFetchType,
+  CpmmKeys,
 } from "./type";
 import { API_URLS, API_URL_CONFIG } from "./url";
 import { updateReqHistory } from "./utils";
-import { PublicKey } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import { solToWSol } from "../common";
+import { CpmmPoolInfoLayout } from "..";
 
 const logger = createLogger("Raydium_Api");
 const poolKeysCache: Map<string, PoolKeys> = new Map();
@@ -209,14 +211,70 @@ export class Api {
       return true;
     });
 
-    let data: PoolKeys[] = [];
-    if (readyList.length) {
-      const res = await this.api.get<PoolKeys[]>(
-        (this.urlConfigs.POOL_KEY_BY_ID || API_URLS.POOL_KEY_BY_ID) + `?ids=${readyList.join(",")}`,
-      );
-      data = res.data.filter(Boolean);
-      data.forEach((poolKey) => {
-        poolKeysCache.set(poolKey.id, poolKey);
+    const data: CpmmKeys[] = [];
+    const connection = new Connection('https://rpc.ironforge.network/mainnet?apiKey='); // Use appropriate RPC endpoint
+      const accounts = (await connection.getProgramAccounts(new PublicKey("8yQvrjQuritLntxz6pAaWcEX6CsRMeDmr7baCLnNwEuw"),
+      {
+        encoding: "base64",
+        filters:[
+          {
+            dataSize: 637
+          }
+      ]
+      }))
+      .filter((account:any) => account.pubkey.toString() !== 'AJBTtXxDzoUtZrEPS7ZR5H18gYpLK4r9BH4AxCWD7v1y');
+    
+    for (const acc of accounts){
+      const decodedData = CpmmPoolInfoLayout.decode(acc.account.data)
+      data.push({
+        programId: new PublicKey("8yQvrjQuritLntxz6pAaWcEX6CsRMeDmr7baCLnNwEuw").toString(),
+        id: acc.pubkey.toString(),
+        mintA: {
+          address: decodedData.mintA.toString(),
+          decimals: decodedData.mintDecimalA,
+          symbol: '',
+          name: '',
+          logoURI: '',
+          tags: [],
+          extensions: {},
+          chainId: 101,
+          programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        mintB: {
+          address: decodedData.mintB.toString(),
+          decimals: decodedData.mintDecimalB,
+          symbol: '',
+          name: '',
+          logoURI: '',
+          tags: [],
+          extensions: {},
+          chainId: 101,
+          programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        vault: {
+          A: decodedData.vaultA.toString(),
+          B: decodedData.vaultB.toString()
+        },
+        authority: "E1oP2yNZXw3dFnUoPygWZPg9u2Gad87VFVPeYWqa6rD6",
+        mintLp: {
+          address: decodedData.mintLp.toString(),
+          decimals: 9,
+          symbol: '',
+          name: '',
+          logoURI: '',
+          tags: [],
+          extensions: {},
+          chainId: 101,
+          programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        config: {
+          id: "AJBTtXxDzoUtZrEPS7ZR5H18gYpLK4r9BH4AxCWD7v1y",
+          index: 0,
+          protocolFeeRate: 120000 / 1_000_000,
+          tradeFeeRate: 40000 / 1_000_000,
+          fundFeeRate: 40000 / 1_000_000,
+          createPoolFee: "0"
+        }
       });
     }
 
