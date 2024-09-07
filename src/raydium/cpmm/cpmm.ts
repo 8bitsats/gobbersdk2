@@ -4,7 +4,7 @@ import { ApiV3PoolInfoConcentratedItem, ApiV3PoolInfoStandardItemCpmm, CpmmKeys 
 import { Percent } from "@/module";
 import { BN_ZERO } from "@/common/bignumber";
 import { getATAAddress } from "@/common/pda";
-import { WSOLMint } from "@/common/pubKey";
+import { RENT_PROGRAM_ID, SYSTEM_PROGRAM_ID, WSOLMint } from "@/common/pubKey";
 import { InstructionType, TxVersion } from "@/common/txTool/txType";
 import { MakeTxData } from "@/common/txTool/txTool";
 import { CurveCalculator } from "./curve/calculator";
@@ -27,6 +27,9 @@ import {
   makeWithdrawCpmmInInstruction,
   makeSwapCpmmBaseInInInstruction,
   makeSwapCpmmBaseOutInInstruction,
+  makeCreateAmmConfig,
+  makeInitializeMetadata,
+  MAX_URI_LENGTH,
 } from "./instruction";
 import BN from "bn.js";
 import { CpmmPoolInfoLayout, CpmmConfigInfoLayout } from "./layout";
@@ -232,7 +235,7 @@ export default class CpmmModule extends ModuleBase {
 
     return {
       poolInfo: {
-        programId: "8yQvrjQuritLntxz6pAaWcEX6CsRMeDmr7baCLnNwEuw",
+        programId: "CVF4q3yFpyQwV8DLDiJ9Ew6FFLE1vr5ToRzsXYQTaNrj",
         id: poolId,
         type: "Standard",
         lpMint,
@@ -259,7 +262,7 @@ export default class CpmmModule extends ModuleBase {
         farmFinishedCount: 0,
       },
       poolKeys: {
-        programId: "8yQvrjQuritLntxz6pAaWcEX6CsRMeDmr7baCLnNwEuw",
+        programId: "CVF4q3yFpyQwV8DLDiJ9Ew6FFLE1vr5ToRzsXYQTaNrj",
         id: poolId,
         mintA,
         mintB,
@@ -281,6 +284,9 @@ export default class CpmmModule extends ModuleBase {
     checkCreateATAOwner = false,
     txVersion,
     computeBudgetConfig,
+    name,
+    symbol,
+    uri,
     ...params
   }: CreateCpmmPoolParam<T>): Promise<MakeTxData<T, { address: CreateCpmmPoolAddress }>> {
     const payer = ownerInfo.feePayer || this.scope.owner?.publicKey;
@@ -336,19 +342,45 @@ export default class CpmmModule extends ModuleBase {
 
     if (userVaultA === undefined || userVaultB === undefined) throw Error("you don't has some token account");
 
+    const configid = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
+    const [ammConfigKey, _bump] = PublicKey.findProgramAddressSync(
+        [Buffer.from("amm_config"), new BN(configid).toArrayLike(Buffer, 'be', 8)],
+        programId
+    );
     const poolKeys = getCreatePoolKeys({
       creator: this.scope.ownerPubKey,
       programId,
       mintA: mintAPubkey,
       mintB: mintBPubkey,
+      configId: ammConfigKey
     });
+    poolKeys.configId = ammConfigKey;
 
+    async function shortenUrl(url: string): Promise<string> {
+      try {
+        const response = await fetch(`http://tinyurl.com/api-create.php?url=${encodeURIComponent(url)}`);
+        return await response.text();
+      } catch (error) {
+        console.error('Error shortening URL:', error);
+        return url.substring(0, MAX_URI_LENGTH);
+      }
+    }
     txBuilder.addInstruction({
       instructions: [
+        makeCreateAmmConfig(
+          programId,
+          this.scope.ownerPubKey,
+          ammConfigKey,
+          new BN(configid),
+          new BN(2500), // token1LpRate
+          new BN(2500), // token0LpRate
+          new BN(2500), // token0CreatorRate
+          new BN(2500)  // token1CreatorRate
+        ),
         makeCreateCpmmPoolInInstruction(
           programId,
           this.scope.ownerPubKey,
-          poolKeys.configId,
+          ammConfigKey,
           poolKeys.authority,
           poolKeys.poolId,
           mintAPubkey,
@@ -365,6 +397,29 @@ export default class CpmmModule extends ModuleBase {
           mintAAmount,
           mintBAmount,
           startTime,
+        ),
+        makeInitializeMetadata(
+          programId,
+          this.scope.ownerPubKey,
+          poolKeys.authority,
+          poolKeys.lpMint,
+          new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"), // Token Metadata Program ID
+          PublicKey.findProgramAddressSync(
+            [
+              Buffer.from("metadata"),
+              new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s").toBuffer(),
+              poolKeys.lpMint.toBuffer(),
+            ],
+            new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s")
+          )[0],
+          SYSTEM_PROGRAM_ID,
+          RENT_PROGRAM_ID,
+          ammConfigKey,
+          poolKeys.poolId,
+          poolKeys.observationId,
+          name,
+          symbol,
+          await shortenUrl(uri)
         ),
       ],
       instructionTypes: [InstructionType.CpmmCreatePool],
@@ -494,24 +549,7 @@ export default class CpmmModule extends ModuleBase {
     txBuilder.addInstruction(lpInstruction);
     const poolKeys = propPoolKeys ?? (await this.getCpmmPoolKeys(poolInfo.id));
     const _slippage = new Percent(new BN(1)).sub(slippage);
-console.log(
-  new PublicKey(poolInfo.programId),
-  this.scope.ownerPubKey,
-  new PublicKey(poolKeys.authority),
-  new PublicKey(poolInfo.id),
-  _lpTokenAccount!,
-  tokenAccountA!,
-  tokenAccountB!,
-  new PublicKey(poolKeys.vault.A),
-  new PublicKey(poolKeys.vault.B),
-  mintA,
-  mintB,
-  new PublicKey(poolInfo.lpMint.address),
 
-  computeResult ? computeResult?.liquidity : _slippage.mul(liquidity).quotient,
-  baseIn ? inputAmountFee.amount : anotherAmount,
-  baseIn ? anotherAmount : inputAmountFee.amount,
-)
     txBuilder.addInstruction({
       instructions: [
         makeDepositCpmmInInstruction(

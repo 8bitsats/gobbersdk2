@@ -1490,7 +1490,7 @@ export class Clmm extends ModuleBase {
     const poolKeys: ClmmKeys = {
       ...computeClmmPoolInfo[poolId],
       id: poolId,
-      programId: "8yQvrjQuritLntxz6pAaWcEX6CsRMeDmr7baCLnNwEuw",
+      programId: "CVF4q3yFpyQwV8DLDiJ9Ew6FFLE1vr5ToRzsXYQTaNrj",
       vault: {
         A: rpcData.vaultA.toBase58(),
         B: rpcData.vaultB.toBase58(),

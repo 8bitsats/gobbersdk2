@@ -59,6 +59,9 @@ export interface CreateCpmmPoolParam<T> {
   mintAAmount: BN;
   mintBAmount: BN;
   startTime: BN;
+  name: string;
+  symbol: string;
+  uri: string;
 
   associatedOnly: boolean;
   checkCreateATAOwner?: boolean;

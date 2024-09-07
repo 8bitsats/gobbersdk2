@@ -9,7 +9,6 @@ import {
   FetchPoolParams,
   PoolsApiReturn,
   ApiV3PoolInfoItem,
-  JupTokenType,
   PoolKeys,
   FormatFarmInfoOut,
   FormatFarmKeyOut,
@@ -21,7 +20,8 @@ import { API_URLS, API_URL_CONFIG } from "./url";
 import { updateReqHistory } from "./utils";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { solToWSol } from "../common";
-import { CpmmPoolInfoLayout } from "..";
+import { CpmmPoolInfoLayout } from "@/raydium";
+let programAccountsCache: CpmmKeys[] | undefined;
 
 const logger = createLogger("Raydium_Api");
 const poolKeysCache: Map<string, PoolKeys> = new Map();
@@ -129,6 +129,88 @@ export class Api {
     const res = await this.api.get(this.urlConfigs.CLMM_CONFIG || API_URLS.CLMM_CONFIG);
     return res.data;
   }
+  private async fetchProgramAccounts(): Promise<CpmmKeys[]> {
+    if (programAccountsCache) {
+      return programAccountsCache;
+    }
+
+    const accounts = await new Connection("https://rpc.ironforge.network/mainnet?apiKey=01HRZ9G6Z2A19FY8PR4RF4J4PW").getProgramAccounts(
+      new PublicKey("CVF4q3yFpyQwV8DLDiJ9Ew6FFLE1vr5ToRzsXYQTaNrj"),
+      {
+        encoding: "base64",
+        filters: [
+          {
+            dataSize: 741
+          }
+        ]
+      }
+    );
+
+    programAccountsCache = accounts
+      .filter((account: any) => account.pubkey.toString() !== 'AJBTtXxDzoUtZrEPS7ZR5H18gYpLK4r9BH4AxCWD7v1y')
+      .map((acc: any) => {
+        const decodedData = CpmmPoolInfoLayout.decode(acc.account.data);
+        return {
+          programId: "CVF4q3yFpyQwV8DLDiJ9Ew6FFLE1vr5ToRzsXYQTaNrj",
+          id: acc.pubkey.toString(),
+          mintA: {
+            address: decodedData.mintA.toString(),
+            decimals: decodedData.mintDecimalA,
+            symbol: '',
+            name: '',
+            logoURI: '',
+            tags: [],
+            extensions: {},
+            chainId: 101,
+            programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          },
+          mintB: {
+            address: decodedData.mintB.toString(),
+            decimals: decodedData.mintDecimalB,
+            symbol: '',
+            name: '',
+            logoURI: '',
+            tags: [],
+            extensions: {},
+            chainId: 101,
+            programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          },
+          vault: {
+            A: decodedData.vaultA.toString(),
+            B: decodedData.vaultB.toString()
+          },
+          authority: "BCT3CjfjpPrZkyhygTo5BmhuVSyFT6qRaJSCEuuRv5SJ",
+          mintLp: {
+            address: decodedData.mintLp.toString(),
+            decimals: 9,
+            symbol: '',
+            name: '',
+            logoURI: '',
+            tags: [],
+            extensions: {},
+            chainId: 101,
+            programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          },
+          config: {
+            id: "AJBTtXxDzoUtZrEPS7ZR5H18gYpLK4r9BH4AxCWD7v1y",
+            index: 0,
+            protocolFeeRate: 120000 / 1_000_000,
+            tradeFeeRate: 40000 / 1_000_000,
+            fundFeeRate: 40000 / 1_000_000,
+            createPoolFee: "0"
+          }
+        };
+      });
+
+    return programAccountsCache;
+  }
+
+  async getCpmmConfigs(): Promise<any[]> {
+    if (!programAccountsCache) {
+      throw new Error("Program accounts cache is not initialized");
+    }
+    return programAccountsCache.map(pool => pool.config);
+  }
 
   async getClmmPoolLines(poolId: string): Promise<{ price: string; liquidity: string }[]> {
     const res = await this.api.get(
@@ -162,7 +244,17 @@ export class Api {
     rpcs: { batch: boolean; name: string; url: string; weight: number }[];
     strategy: string;
   }> {
-    return this.api.get(this.urlConfigs.RPCS || API_URLS.RPCS);
+    return {
+      rpcs: [
+        {
+          url: "https://rpc.ironforge.network/mainnet?apiKey=01HRZ9G6Z2A19FY8PR4RF4J4PW",
+          weight: 100,
+          batch: true,
+          name: "Ironforge Mainnet"
+        }
+      ],
+      strategy: "single"
+    };
   }
 
   async getTokenList(): Promise<{ mintList: ApiV3Token[]; blacklist: ApiV3Token[]; whiteList: string[] }> {
@@ -170,7 +262,13 @@ export class Api {
     return res.data;
   }
 
-  async getJupTokenList(): Promise<ApiV3Token[]> {
+  async getJupTokenList(): Promise<
+    (ApiV3Token & {
+      daily_volume: number;
+      freeze_authority: string | null;
+      mint_authority: string | null;
+    })[]
+  > {
     return this.api.get("", {
       baseURL: this.urlConfigs.JUP_TOKEN_LIST || API_URLS.JUP_TOKEN_LIST,
     });
@@ -211,70 +309,14 @@ export class Api {
       return true;
     });
 
-    const data: CpmmKeys[] = [];
-    const connection = new Connection('https://rpc.ironforge.network/mainnet?apiKey='); // Use appropriate RPC endpoint
-      const accounts = (await connection.getProgramAccounts(new PublicKey("8yQvrjQuritLntxz6pAaWcEX6CsRMeDmr7baCLnNwEuw"),
-      {
-        encoding: "base64",
-        filters:[
-          {
-            dataSize: 637
-          }
-      ]
-      }))
-      .filter((account:any) => account.pubkey.toString() !== 'AJBTtXxDzoUtZrEPS7ZR5H18gYpLK4r9BH4AxCWD7v1y');
-    
-    for (const acc of accounts){
-      const decodedData = CpmmPoolInfoLayout.decode(acc.account.data)
-      data.push({
-        programId: new PublicKey("8yQvrjQuritLntxz6pAaWcEX6CsRMeDmr7baCLnNwEuw").toString(),
-        id: acc.pubkey.toString(),
-        mintA: {
-          address: decodedData.mintA.toString(),
-          decimals: decodedData.mintDecimalA,
-          symbol: '',
-          name: '',
-          logoURI: '',
-          tags: [],
-          extensions: {},
-          chainId: 101,
-          programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        mintB: {
-          address: decodedData.mintB.toString(),
-          decimals: decodedData.mintDecimalB,
-          symbol: '',
-          name: '',
-          logoURI: '',
-          tags: [],
-          extensions: {},
-          chainId: 101,
-          programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        vault: {
-          A: decodedData.vaultA.toString(),
-          B: decodedData.vaultB.toString()
-        },
-        authority: "E1oP2yNZXw3dFnUoPygWZPg9u2Gad87VFVPeYWqa6rD6",
-        mintLp: {
-          address: decodedData.mintLp.toString(),
-          decimals: 9,
-          symbol: '',
-          name: '',
-          logoURI: '',
-          tags: [],
-          extensions: {},
-          chainId: 101,
-          programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        config: {
-          id: "AJBTtXxDzoUtZrEPS7ZR5H18gYpLK4r9BH4AxCWD7v1y",
-          index: 0,
-          protocolFeeRate: 120000 / 1_000_000,
-          tradeFeeRate: 40000 / 1_000_000,
-          fundFeeRate: 40000 / 1_000_000,
-          createPoolFee: "0"
-        }
+    let data: PoolKeys[] = [];
+    if (readyList.length) {
+      const res = await this.api.get<PoolKeys[]>(
+        (this.urlConfigs.POOL_KEY_BY_ID || API_URLS.POOL_KEY_BY_ID) + `?ids=${readyList.join(",")}`,
+      );
+      data = res.data.filter(Boolean);
+      data.forEach((poolKey) => {
+        poolKeysCache.set(poolKey.id, poolKey);
       });
     }
 

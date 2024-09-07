@@ -325,8 +325,7 @@ export default class TradeV2 extends ModuleBase {
 
   // get all amm/clmm/cpmm pools data only with id and mint
   public async fetchRoutePoolBasicInfo(programIds?: { amm: PublicKey; clmm: PublicKey; cpmm: PublicKey }): Promise<{
-    ammPools: BasicPoolInfo[];
-    clmmPools: BasicPoolInfo[];
+    
     cpmmPools: BasicPoolInfo[];
   }> {
     const { amm = AMM_V4, clmm = CLMM_PROGRAM_ID, cpmm = CREATE_CPMM_POOL_PROGRAM } = programIds || {};
@@ -373,8 +372,6 @@ export default class TradeV2 extends ModuleBase {
     });
 
     return {
-      clmmPools: clmmData,
-      ammPools: ammData,
       cpmmPools: cpmmData,
     };
   }
@@ -383,15 +380,11 @@ export default class TradeV2 extends ModuleBase {
   public getAllRoute({
     inputMint,
     outputMint,
-    clmmPools,
-    ammPools,
     cpmmPools,
   }: {
     inputMint: PublicKey;
     outputMint: PublicKey;
-    clmmPools: BasicPoolInfo[];
-    ammPools: BasicPoolInfo[];
-    cpmmPools: BasicPoolInfo[];
+   cpmmPools: BasicPoolInfo[];
   }): ReturnTypeGetAllRoute {
     inputMint = inputMint.toString() === PublicKey.default.toString() ? WSOLMint : inputMint;
     outputMint = outputMint.toString() === PublicKey.default.toString() ? WSOLMint : outputMint;
@@ -404,113 +397,7 @@ export default class TradeV2 extends ModuleBase {
 
     const routePathDict: RoutePathType = {}; // {[route mint: string]: {in: [] , out: []}}
 
-    for (const itemClmmPool of clmmPools ?? []) {
-      if (
-        (itemClmmPool.mintA.equals(inputMint) && itemClmmPool.mintB.equals(outputMint)) ||
-        (itemClmmPool.mintA.equals(outputMint) && itemClmmPool.mintB.equals(inputMint))
-      ) {
-        directPath.push(itemClmmPool);
-        needTickArray[itemClmmPool.id.toString()] = itemClmmPool;
-      }
-
-      if (itemClmmPool.mintA.equals(inputMint)) {
-        const t = itemClmmPool.mintB.toString();
-        if (routePathDict[t] === undefined)
-          routePathDict[t] = {
-            mintProgram: TOKEN_PROGRAM_ID, // to fetch later
-            in: [],
-            out: [],
-            mDecimals: 0, // to fetch later
-          };
-        routePathDict[t].in.push(itemClmmPool);
-      }
-      if (itemClmmPool.mintB.equals(inputMint)) {
-        const t = itemClmmPool.mintA.toString();
-        if (routePathDict[t] === undefined)
-          routePathDict[t] = {
-            mintProgram: TOKEN_PROGRAM_ID, // to fetch later
-            in: [],
-            out: [],
-            mDecimals: 0, // to fetch later
-          };
-        routePathDict[t].in.push(itemClmmPool);
-      }
-      if (itemClmmPool.mintA.equals(outputMint)) {
-        const t = itemClmmPool.mintB.toString();
-        if (routePathDict[t] === undefined)
-          routePathDict[t] = {
-            mintProgram: TOKEN_PROGRAM_ID, // to fetch later
-            in: [],
-            out: [],
-            mDecimals: 0, // to fetch later
-          };
-        routePathDict[t].out.push(itemClmmPool);
-      }
-      if (itemClmmPool.mintB.equals(outputMint)) {
-        const t = itemClmmPool.mintA.toString();
-        if (routePathDict[t] === undefined)
-          routePathDict[t] = {
-            mintProgram: TOKEN_PROGRAM_ID, // to fetch later
-            in: [],
-            out: [],
-            mDecimals: 0, // to fetch later
-          };
-        routePathDict[t].out.push(itemClmmPool);
-      }
-    }
-
     const addLiquidityPools: BasicPoolInfo[] = [];
-
-    for (const itemAmmPool of ammPools) {
-      if (
-        (itemAmmPool.mintA.equals(inputMint) && itemAmmPool.mintB.equals(outputMint)) ||
-        (itemAmmPool.mintA.equals(outputMint) && itemAmmPool.mintB.equals(inputMint))
-      ) {
-        directPath.push(itemAmmPool);
-        needSimulate[itemAmmPool.id.toBase58()] = itemAmmPool;
-        addLiquidityPools.push(itemAmmPool);
-      }
-      if (itemAmmPool.mintA.equals(inputMint)) {
-        if (routePathDict[itemAmmPool.mintB.toBase58()] === undefined)
-          routePathDict[itemAmmPool.mintB.toBase58()] = {
-            mintProgram: TOKEN_PROGRAM_ID,
-            in: [],
-            out: [],
-            mDecimals: 0, // to fetch later
-          };
-        routePathDict[itemAmmPool.mintB.toBase58()].in.push(itemAmmPool);
-      }
-      if (itemAmmPool.mintB.equals(inputMint)) {
-        if (routePathDict[itemAmmPool.mintA.toBase58()] === undefined)
-          routePathDict[itemAmmPool.mintA.toBase58()] = {
-            mintProgram: TOKEN_PROGRAM_ID,
-            in: [],
-            out: [],
-            mDecimals: 0, // to fetch later
-          };
-        routePathDict[itemAmmPool.mintA.toBase58()].in.push(itemAmmPool);
-      }
-      if (itemAmmPool.mintA.equals(outputMint)) {
-        if (routePathDict[itemAmmPool.mintB.toBase58()] === undefined)
-          routePathDict[itemAmmPool.mintB.toBase58()] = {
-            mintProgram: TOKEN_PROGRAM_ID,
-            in: [],
-            out: [],
-            mDecimals: 0, // to fetch later
-          };
-        routePathDict[itemAmmPool.mintB.toBase58()].out.push(itemAmmPool);
-      }
-      if (itemAmmPool.mintB.equals(outputMint)) {
-        if (routePathDict[itemAmmPool.mintA.toBase58()] === undefined)
-          routePathDict[itemAmmPool.mintA.toBase58()] = {
-            mintProgram: TOKEN_PROGRAM_ID,
-            in: [],
-            out: [],
-            mDecimals: 0, // to fetch later
-          };
-        routePathDict[itemAmmPool.mintA.toBase58()].out.push(itemAmmPool);
-      }
-    }
 
     for (const itemCpmmPool of cpmmPools) {
       if (

@@ -5,7 +5,6 @@ import {
   ApiV3PoolInfoStandardItem,
   AmmV4Keys,
   AmmV5Keys,
-  FormatFarmInfoOutV6,
 } from "@/api/type";
 import { Token, TokenAmount, Percent } from "@/module";
 import { toToken } from "../token";
@@ -36,16 +35,7 @@ import { ComputeBudgetConfig } from "../type";
 import { ClmmInstrument } from "../clmm/instrument";
 import { getAssociatedPoolKeys, getAssociatedConfigId, toAmmComputePoolInfo } from "./utils";
 import { createPoolFeeLayout, liquidityStateV4Layout } from "./layout";
-import {
-  FARM_PROGRAM_TO_VERSION,
-  FarmLedger,
-  makeWithdrawInstructionV3,
-  makeWithdrawInstructionV5,
-  makeWithdrawInstructionV6,
-  createAssociatedLedgerAccountInstruction,
-  getAssociatedLedgerAccount,
-  getFarmLedgerLayout,
-} from "@/raydium/farm";
+
 import { StableLayout, getStablePrice, getDyByDxBaseIn, getDxByDyBaseIn } from "./stable";
 import { LIQUIDITY_FEES_NUMERATOR, LIQUIDITY_FEES_DENOMINATOR } from "./constant";
 
@@ -374,7 +364,7 @@ export default class LiquidityModule extends ModuleBase {
       baseAmount: BN;
       otherAmountMax: BN;
     };
-    farmInfo?: FormatFarmInfoOutV6;
+    farmInfo?: any;
     userFarmLpAmount?: BN;
     userAuxiliaryLedgers?: PublicKey[];
     base: "MintA" | "MintB";
@@ -459,81 +449,20 @@ export default class LiquidityModule extends ModuleBase {
 
     mintToAccount[poolInfo.mintA.address] = baseTokenAccount;
     mintToAccount[poolInfo.mintB.address] = quoteTokenAccount;
-
-    if (farmInfo !== undefined && !userFarmLpAmount?.isZero()) {
-      const farmVersion = FARM_PROGRAM_TO_VERSION[farmInfo.programId];
-      const ledger = getAssociatedLedgerAccount({
-        programId: new PublicKey(farmInfo.programId),
-        poolId: new PublicKey(farmInfo.id),
-        owner: this.scope.ownerPubKey,
-        version: farmVersion,
-      });
-      let ledgerInfo: FarmLedger | undefined = undefined;
-      const ledgerData = await this.scope.connection.getAccountInfo(ledger);
-      if (ledgerData) {
-        const ledgerLayout = getFarmLedgerLayout(farmVersion)!;
-        ledgerInfo = ledgerLayout.decode(ledgerData.data);
-      }
-      if (farmVersion !== 6 && !ledgerInfo) {
-        const { instruction, instructionType } = createAssociatedLedgerAccountInstruction({
-          id: new PublicKey(farmInfo.id),
-          programId: new PublicKey(farmInfo.programId),
-          version: farmVersion,
-          ledger,
-          owner: this.scope.ownerPubKey,
-        });
-        txBuilder.addInstruction({ instructions: [instruction], instructionTypes: [instructionType] });
-      }
-
-      const rewardTokenAccounts: PublicKey[] = [];
-      for (const item of farmInfo.rewardInfos) {
-        const rewardIsWsol = item.mint.address === Token.WSOL.mint.toString();
-        if (mintToAccount[item.mint.address]) rewardTokenAccounts.push(mintToAccount[item.mint.address]);
-        else {
-          const { account: farmRewardAccount, instructionParams: ownerTokenAccountFarmInstruction } =
-            await this.scope.account.getOrCreateTokenAccount({
-              mint: new PublicKey(item.mint.address),
-              tokenProgram,
-              owner: this.scope.ownerPubKey,
-              skipCloseAccount: !rewardIsWsol,
-              createInfo: {
-                payer: payer || this.scope.ownerPubKey,
-              },
-              associatedOnly: true,
-              checkCreateATAOwner,
-            });
-          if (!farmRewardAccount) this.logAndCreateError("farm reward account not found:", item.mint.address);
-          ownerTokenAccountFarmInstruction && txBuilder.addInstruction(ownerTokenAccountFarmInstruction);
-          rewardTokenAccounts.push(farmRewardAccount!);
-        }
-      }
-      const farmKeys = (await this.scope.api.fetchFarmKeysById({ ids: farmInfo.id }))[0];
       const insParams = {
         userAuxiliaryLedgers,
         amount: userFarmLpAmount!,
         owner: this.scope.ownerPubKey,
         farmInfo,
-        farmKeys,
         lpAccount: lpTokenAccount,
-        rewardAccounts: rewardTokenAccounts,
+        rewardAccounts: [],
       };
-      const version = FARM_PROGRAM_TO_VERSION[farmInfo.programId];
-      const newInstruction =
-        version === 6
-          ? makeWithdrawInstructionV6(insParams)
-          : version === 5
-          ? makeWithdrawInstructionV5(insParams)
-          : makeWithdrawInstructionV3(insParams);
+
       const insType = {
         3: InstructionType.FarmV3Withdraw,
         5: InstructionType.FarmV5Withdraw,
         6: InstructionType.FarmV6Withdraw,
       };
-      txBuilder.addInstruction({
-        instructions: [newInstruction],
-        instructionTypes: [insType[version]],
-      });
-    }
 
     const poolKeys = await this.getAmmPoolKeys(poolInfo.id);
 

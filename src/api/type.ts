@@ -1,4 +1,3 @@
-import { FarmRewardInfo, FarmVersion } from "../raydium/farm";
 
 /* ================= liquidity ================= */
 export type LiquidityVersion = 4 | 5;
@@ -48,12 +47,12 @@ export interface ApiStakePoolInfo {
   symbol: string;
   lpMint: string;
   // version
-  version: FarmVersion;
+  version: any;
   programId: string;
   // keys
   authority: string;
   lpVault: string;
-  rewardInfos: FarmRewardInfo[] | FarmRewardInfoV6[];
+  rewardInfos: any[] | FarmRewardInfoV6[];
   // status
   upcoming: boolean;
 }

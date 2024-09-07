@@ -8,7 +8,6 @@ import { Owner } from "../common/owner";
 import { Cluster } from "../solana";
 
 import Account, { TokenAccountDataProp } from "./account/account";
-import Farm from "./farm/farm";
 import Liquidity from "./liquidity/liquidity";
 import { Clmm } from "./clmm";
 import Cpmm from "./cpmm/cpmm";
@@ -67,7 +66,7 @@ interface ApiData {
 
 export class Raydium {
   public cluster: Cluster;
-  public farm: Farm;
+  public farm: any;
   public account: Account;
   public liquidity: Liquidity;
   public clmm: Clmm;
@@ -121,7 +120,6 @@ export class Raydium {
     this.api = api;
     this._apiCacheTime = apiCacheTime || 5 * 60 * 1000;
     this.logger = createLogger("Raydium");
-    this.farm = new Farm({ scope: this, moduleName: "Raydium_Farm" });
     this.account = new Account({
       scope: this,
       moduleName: "Raydium_Account",
@@ -219,12 +217,11 @@ export class Raydium {
 
   public async fetchChainTime(): Promise<void> {
     try {
-      const data = await this.api.getChainTimeOffset();
       this._chainTime = {
         fetched: Date.now(),
         value: {
-          chainTime: Date.now() + data.offset * 1000,
-          offset: data.offset * 1000,
+          chainTime: Date.now(),
+          offset: 0,
         },
       };
     } catch {
@@ -261,7 +258,11 @@ export class Raydium {
       const jupList = await this.api.getJupTokenList();
       this.apiData.jupTokenList = {
         fetched: Date.now(),
-        data: jupList,
+        data: jupList.map((t) => ({
+          ...t,
+          mintAuthority: undefined,
+          freezeAuthority:undefined,
+        })),
       };
 
       return this.apiData.jupTokenList.data;
