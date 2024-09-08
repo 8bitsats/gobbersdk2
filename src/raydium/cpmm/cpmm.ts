@@ -569,6 +569,8 @@ export default class CpmmModule extends ModuleBase {
           computeResult ? computeResult?.liquidity : _slippage.mul(liquidity).quotient,
           baseIn ? inputAmountFee.amount : anotherAmount,
           baseIn ? anotherAmount : inputAmountFee.amount,
+          new PublicKey(poolInfo.mintA.programId),
+          new PublicKey(poolInfo.mintB.programId)
         ),
       ],
       instructionTypes: [InstructionType.CpmmAddLiquidity],
@@ -670,6 +672,8 @@ export default class CpmmModule extends ModuleBase {
           lpAmount,
           amountMintA.sub(mintAAmountFee.fee ?? new BN(0)),
           amountMintB.sub(mintBAmountFee.fee ?? new BN(0)),
+          new PublicKey(poolInfo.mintA.programId),
+          new PublicKey(poolInfo.mintB.programId)
         ),
       ],
       instructionTypes: [InstructionType.CpmmWithdrawLiquidity],

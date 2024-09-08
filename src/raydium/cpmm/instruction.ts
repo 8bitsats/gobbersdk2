@@ -216,6 +216,8 @@ export function makeDepositCpmmInInstruction(
   lpAmount: BN,
   amountMaxA: BN,
   amountMaxB: BN,
+  tokenProgramA: PublicKey,
+  tokenProgramB: PublicKey
 ): TransactionInstruction {
   const dataLayout = struct([u64("lpAmount"), u64("amountMaxA"), u64("amountMaxB")]);
 
@@ -223,9 +225,9 @@ export function makeDepositCpmmInInstruction(
     { pubkey: owner, isSigner: true, isWritable: false },
     { pubkey: authority, isSigner: false, isWritable: false },
     { pubkey: poolId, isSigner: false, isWritable: true },
-    { pubkey: getAssociatedTokenAddressSync(lpMint, owner), isSigner: false, isWritable: true },
-    { pubkey: getAssociatedTokenAddressSync(mintA, owner), isSigner: false, isWritable: true },
-    { pubkey: getAssociatedTokenAddressSync(mintB, owner), isSigner: false, isWritable: true },
+    { pubkey: getAssociatedTokenAddressSync(lpMint, owner, true, TOKEN_PROGRAM_ID), isSigner: false, isWritable: true },
+    { pubkey: getAssociatedTokenAddressSync(mintA, owner, true, tokenProgramA), isSigner: false, isWritable: true },
+    { pubkey: getAssociatedTokenAddressSync(mintB, owner, true, tokenProgramB), isSigner: false, isWritable: true },
     { pubkey: getPdaVault(programId, poolId, mintA).publicKey, isSigner: false, isWritable: true },
     { pubkey: getPdaVault(programId, poolId, mintB).publicKey, isSigner: false, isWritable: true },
     { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
@@ -274,6 +276,8 @@ export function makeWithdrawCpmmInInstruction(
   lpAmount: BN,
   amountMinA: BN,
   amountMinB: BN,
+  tokenProgramA: PublicKey,
+  tokenProgramB: PublicKey
 ): TransactionInstruction {
   const dataLayout = struct([u64("lpAmount"), u64("amountMinA"), u64("amountMinB")]);
 
@@ -282,8 +286,8 @@ export function makeWithdrawCpmmInInstruction(
     { pubkey: authority, isSigner: false, isWritable: false },
     { pubkey: poolId, isSigner: false, isWritable: true },
     { pubkey: getAssociatedTokenAddressSync(lpMint, owner), isSigner: false, isWritable: true },
-    { pubkey: getAssociatedTokenAddressSync(mintA, owner), isSigner: false, isWritable: true },
-    { pubkey: getAssociatedTokenAddressSync(mintB, owner), isSigner: false, isWritable: true },
+    { pubkey: getAssociatedTokenAddressSync(mintA, owner, true, tokenProgramA), isSigner: false, isWritable: true },
+    { pubkey: getAssociatedTokenAddressSync(mintB, owner, true, tokenProgramB), isSigner: false, isWritable: true },
     { pubkey: getPdaVault(programId, poolId, mintA).publicKey, isSigner: false, isWritable: true },
     { pubkey: getPdaVault(programId, poolId, mintB ).publicKey, isSigner: false, isWritable: true },
     { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
@@ -381,6 +385,8 @@ export function makeSwapCpmmBaseOutInInstruction(
 
   amountInMax: BN,
   amountOut: BN,
+  tokenProgramA: PublicKey,
+  tokenProgramB: PublicKey
 ): TransactionInstruction {
   const dataLayout = struct([u64("amountInMax"), u64("amountOut")]);
 
@@ -389,8 +395,8 @@ export function makeSwapCpmmBaseOutInInstruction(
     { pubkey: authority, isSigner: false, isWritable: false },
     { pubkey: configId, isSigner: false, isWritable: false },
     { pubkey: poolId, isSigner: false, isWritable: true },
-    { pubkey: getAssociatedTokenAddressSync(inputMint, payer), isSigner: false, isWritable: true },
-    { pubkey: getAssociatedTokenAddressSync(outputMint, payer), isSigner: false, isWritable: true },
+    { pubkey: getAssociatedTokenAddressSync(inputMint, payer, true, tokenProgramA), isSigner: false, isWritable: true },
+    { pubkey: getAssociatedTokenAddressSync(outputMint, payer, true, tokenProgramB), isSigner: false, isWritable: true },
     { pubkey: getPdaVault(programId, poolId, inputMint).publicKey, isSigner: false, isWritable: true },
     { pubkey: getPdaVault(programId, poolId, outputMint).publicKey, isSigner: false, isWritable: true },
     { pubkey: inputTokenProgram, isSigner: false, isWritable: false },
