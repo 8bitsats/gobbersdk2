@@ -1,108 +1,211 @@
-# Raydium SDK
+# Grin Gobbler: AI-Powered DEX on Solana
 
-[npm-image]: https://img.shields.io/npm/v/@raydium-io/raydium-sdk-v2.svg?style=flat
-[npm-url]: https://www.npmjs.com/package/@raydium-io/raydium-sdk-v2
+Grin Gobbler is a next-generation decentralized exchange (DEX) on Solana that leverages artificial intelligence to provide optimal swap routes, efficient transaction processing, and real-time market analysis.
 
-[![npm][npm-image]][npm-url]
+## Overview
 
-An SDK for building applications on top of Raydium.
+Grin Gobbler combines the power of:
 
-## Usage Guide
+- Raydium's deep liquidity pools
+- Helius RPC for reliable Solana network access
+- Cheshire AI agent for transaction analysis and route optimization
+- Local Solana validator for efficient transaction processing
 
-### Installation
+## Key Features
 
-```
-$ yarn add @raydium-io/raydium-sdk-v2
-```
+### 1. AI-Powered Route Finding
 
-## SDK method Demo
+Cheshire, our AI agent, continuously:
 
-[SDK V2 Demo Repo](https://github.com/raydium-io/raydium-sdk-V2-demo)
+- Indexes and analyzes all Raydium pools
+- Tracks liquidity movements and price impacts
+- Identifies optimal swap routes for minimal slippage
+- Predicts transaction success probability
 
-## Features
+### 2. Smart Transaction Processing
 
-### Initialization
+The system ensures efficient swaps by:
 
-```
-import { Raydium } from '@raydium-io/raydium-sdk'
-const raydium = await Raydium.load({
-  connection,
-  owner, // key pair or publicKey, if you run a node process, provide keyPair
-  signAllTransactions, // optional - provide sign functions provided by @solana/wallet-adapter-react
-  tokenAccounts, // optional, if dapp handle it by self can provide to sdk
-  tokenAccountRowInfos, // optional, if dapp handle it by self can provide to sdk
-  disableLoadToken: false // default is false, if you don't need token info, set to true
-})
-```
+- Using local Solana validator for faster transaction confirmation
+- Pre-analyzing transaction viability
+- Monitoring network congestion
+- Adjusting compute units dynamically
 
-#### how to transform token account data
+### 3. Cost Savings
 
-```
-import { parseTokenAccountResp } from '@raydium-io/raydium-sdk'
+Users benefit from:
 
-const solAccountResp = await connection.getAccountInfo(owner.publicKey)
-const tokenAccountResp = await connection.getTokenAccountsByOwner(owner.publicKey, { programId: TOKEN_PROGRAM_ID })
-const token2022Req = await connection.getTokenAccountsByOwner(owner.publicKey, { programId: TOKEN_2022_PROGRAM_ID })
-const tokenAccountData = parseTokenAccountResp({
-  owner: owner.publicKey,
-  solAccountResp,
-  tokenAccountResp: {
-    context: tokenAccountResp.context,
-    value: [...tokenAccountResp.value, ...token2022Req.value],
-  },
-})
+- Minimal price impact through AI-optimized routing
+- Lower transaction fees via compute unit optimization
+- Reduced failed transaction rates
+- Better execution prices through pool analysis
+
+## How It Works
+
+### 1. Route Discovery
+
+```typescript
+const route = await swap.getRoute(inputMint, outputMint, amount);
 ```
 
-#### data after initialization
+- AI agent analyzes all possible routes
+- Considers liquidity depth, price impact, and fees
+- Ranks routes by total cost (including gas)
+- Returns optimal path for execution
 
-```
-# token
-raydium.token.tokenList
-raydium.token.tokenMap
-raydium.token.mintGroup
+### 2. Transaction Execution
 
-
-# token account
-raydium.account.tokenAccounts
-raydium.account.tokenAccountRawInfos
+```typescript
+const tx = await swap.swap(inputMint, outputMint, amount);
 ```
 
-#### Api methods (https://github.com/raydium-io/raydium-sdk-V2/blob/master/src/api/api.ts)
+- Validates route viability
+- Checks token approvals and balances
+- Executes swap through Raydium pools
+- Monitors transaction status
 
-- fetch raydium default mint list
-```
-const data = await raydium.api.getTokenList()
-```
+### 3. Transaction Analysis
 
-- fetch mints recognizable by raydium
-```
-const data = await raydium.api.getTokenInfo(['So11111111111111111111111111111111111111112', '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R'])
-```
-
-- fetch pool list
-available fetch params defined here: https://github.com/raydium-io/raydium-sdk-V2/blob/master/src/api/type.ts#L249
-```
-const data = await raydium.api.getPoolList({})
+```typescript
+const analysis = await swap.analyzeTransaction(signature);
 ```
 
-- fetch poolInfo by id
-```
-// ids: join pool ids by comma(,)
-const data = await raydium.api.fetchPoolById({ ids: 'AVs9TA4nWDzfPJE9gGVNJMVhcQy3V9PGazuz33BfG2RA,8sLbNZoA1cfnvMJLPfp98ZLAnFSYCFApfJKMbiXNLwxj' })
+- Parses transaction logs
+- Verifies execution success
+- Calculates actual vs. expected output
+- Updates AI model for future optimization
+
+## Benefits
+
+### For Traders
+
+- Better execution prices
+- Lower transaction costs
+- Higher success rates
+- Real-time market insights
+
+### For Liquidity Providers
+
+- Optimized pool utilization
+- Reduced impermanent loss risk
+- Better fee generation
+- Pool performance analytics
+
+## Technical Architecture
+
+### AI Agent (Cheshire)
+
+1. **Indexing**
+
+   - Monitors all Raydium pools
+   - Tracks liquidity changes
+   - Records transaction patterns
+   - Updates route models
+
+2. **Analysis**
+
+   - Evaluates pool health
+   - Calculates price impacts
+   - Predicts slippage
+   - Estimates gas costs
+
+3. **Optimization**
+   - Finds most efficient routes
+   - Balances gas vs. slippage
+   - Adjusts for market conditions
+   - Learns from transaction history
+
+### Local Validator
+
+- Processes transactions locally
+- Reduces network latency
+- Provides faster confirmation
+- Enables better error handling
+
+## Getting Started
+
+1. **Installation**
+
+```bash
+npm install gobbersdk2
 ```
 
-- fetch pool list by mints
-```
-const data = await raydium.api.fetchPoolByMints({
-  mint1: 'So11111111111111111111111111111111111111112',
-  mint2: '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R' // optional,
-  // extra params: https://github.com/raydium-io/raydium-sdk-V2/blob/master/src/api/type.ts#L249
-})
+2. **Initialize Swap**
+
+```typescript
+import { GrinSwap } from "gobbersdk2";
+
+const swap = new GrinSwap();
+await swap.initialize();
 ```
 
-- fetch farmInfo by id
-```
-// ids: join farm ids by comma(,)
-const data = await raydium.api.fetchFarmInfoById({ ids: '4EwbZo8BZXP5313z5A2H11MRBP15M5n6YxfmkjXESKAW,HUDr9BDaAGqi37xbQHzxCyXvfMCKPTPNF8g9c9bPu1Fu' })
+3. **Execute Swap**
+
+```typescript
+// Get best route
+const route = await swap.getRoute(SOL_MINT, USDC_MINT, 1);
+
+// Execute swap
+const tx = await swap.swap(SOL_MINT, USDC_MINT, 1);
+
+// Analyze result
+const analysis = await swap.analyzeTransaction(tx.signature);
 ```
 
+## Configuration
+
+The system uses environment variables for configuration:
+
+```env
+HELIUS_RPC_URL=your-helius-url
+HELIUS_WSS_URL=your-helius-websocket-url
+```
+
+## Best Practices
+
+1. **Route Analysis**
+
+   - Always check route.priceImpact before executing
+   - Consider route.fee in total cost calculation
+   - Monitor route.poolType for pool stability
+
+2. **Transaction Execution**
+
+   - Use appropriate slippage tolerance
+   - Monitor transaction status
+   - Handle errors gracefully
+
+3. **Cost Optimization**
+   - Balance transaction speed vs. cost
+   - Consider splitting large trades
+   - Monitor pool liquidity depth
+
+## Future Development
+
+1. **Enhanced AI Features**
+
+   - MEV protection
+   - Arbitrage detection
+   - Advanced pool analytics
+   - Cross-chain optimization
+
+2. **Additional Integrations**
+
+   - More DEX integrations
+   - Cross-chain bridges
+   - Advanced order types
+   - Portfolio management
+
+3. **User Features**
+   - Transaction notifications
+   - Performance analytics
+   - Custom routing strategies
+   - Automated trading
+
+## Contributing
+
+We welcome contributions! Please see our contributing guidelines for more information.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

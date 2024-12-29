@@ -1,0 +1,245 @@
+.swap-container {
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: var(--surface);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: var(--text-primary);
+}
+
+h1 {
+  text-align: center;
+  color: var(--text-primary);
+  margin-bottom: 2rem;
+  font-size: 2rem;
+}
+
+.wallet-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.swap-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.input-section,
+.slippage-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-section label,
+.slippage-section label {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.input-section input,
+.slippage-section input {
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--surface-2);
+  background: var(--surface-2);
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.input-section input:focus,
+.slippage-section input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.token-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  background: var(--surface-2);
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.token-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.token-label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.token-value {
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.token-divider {
+  color: var(--text-secondary);
+  font-size: 1.5rem;
+}
+
+.route-button,
+.swap-button {
+  padding: 1rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.route-button {
+  background: var(--primary);
+  color: var(--text-primary);
+}
+
+.route-button:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.swap-button {
+  background: var(--success);
+  color: var(--text-primary);
+  margin-top: 1rem;
+}
+
+.swap-button:hover:not(:disabled) {
+  background: var(--success-hover);
+}
+
+.route-button:disabled,
+.swap-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.route-info {
+  background: var(--surface-2);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.route-info h3 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+}
+
+.route-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.route-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.route-label {
+  color: var(--text-secondary);
+}
+
+.route-value {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.error {
+  padding: 1rem;
+  background: var(--error);
+  color: var(--text-primary);
+  border-radius: 8px;
+  margin-top: 1rem;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.success {
+  padding: 1rem;
+  background: var(--success);
+  color: var(--text-primary);
+  border-radius: 8px;
+  margin-top: 1rem;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  color: var(--text-secondary);
+}
+
+.connect-prompt {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 2rem;
+  background: var(--surface-2);
+  border-radius: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .swap-container {
+    margin: 1rem;
+    padding: 1rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .token-section {
+    padding: 1rem;
+  }
+
+  .route-button,
+  .swap-button {
+    padding: 0.75rem;
+  }
+}
